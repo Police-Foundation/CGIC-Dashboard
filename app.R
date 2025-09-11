@@ -1,6 +1,6 @@
 # app.R — CGIC POC Dashboard (Complete Working Version with Time Since Last Hit)
 # ------------------------------------------------------------------------------------------
-
+#chk
 # Load packages with error handling
 required_packages <- c(
   "shiny", "bslib", "DT", "leaflet", "leaflet.extras", "plotly", 
