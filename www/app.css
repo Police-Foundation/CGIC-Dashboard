@@ -1,0 +1,15 @@
+/* www/app.css */
+
+/* Full-width header banner */
+.cgic-header{
+  background:#0f1b2a;                 /* dark blue */
+  border-bottom:4px solid #f4d867;     /* yellow accent */
+}
+.cgic-header .brand{
+  display:flex; align-items:center; gap:1rem; padding:.5rem 1rem;
+}
+.cgic-header-logo{ height:72px; width:auto; }  /* tweak 72→80 if you want it bigger */
+@media (max-width:576px){ .cgic-header-logo{ height:48px; } }
+
+/* Keep navbar snug under the header */
+.navbar{ margin-top:0; }

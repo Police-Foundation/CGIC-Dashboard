@@ -287,33 +287,57 @@ instructions_tab <- tabPanel(
   )
 )
 
+# ---- Navbar brand with bigger CGIC logo ----
+brand <- div(
+  class = "cgic-brand d-flex align-items-center",
+  img(src = "cgic-logo-reverse.png", class = "cgic-logo", alt = "Crime Gun Intelligence Centers"),
+  span("NPI CGIC Dashboard Demo")
+)
+
 # ---- Main UI ----
 ui <- tagList(
   tags$head(
     tags$style(HTML("
-      .app-footer{
-        background:#f5f5f5;
-        border-top:3px solid #eabe3f;
-        color:#1a204b;
-        padding:12px 16px;
-        font-size:12px;
-        line-height:1.35;
-      }
-      .spinner-container { min-height: 300px; }
-    "))
+    /* Footer (yours) */
+    .app-footer{
+      background:#f5f5f5;
+      border-top:3px solid #eabe3f;
+      color:#1a204b;
+      padding:12px 16px;
+      font-size:12px;
+      line-height:1.35;
+    }
+    .spinner-container { min-height: 300px; }
+
+    /* Bigger, nicely aligned navbar brand + logo */
+    .navbar .navbar-brand {
+      display:flex; align-items:center; gap: 1.5rem;
+      padding-top:0; padding-bottom:0;
+    }
+    .navbar .navbar-brand .cgic-logo {
+      height:56px;   /* was 44px */
+      width:auto;
+    }
+    @media (max-width:576px){
+      .navbar .navbar-brand .cgic-logo { height:42px; }  /* was 36px */
+      .cgic-brand span { display:none; }                 /* hide title on phones */
+    }
+
+    /* Keep tab labels vertically centered next to taller brand */
+    .navbar-nav > li > a { padding-top:18px; padding-bottom:18px; }  /* was 16/16 */
+    .navbar .nav-link     { padding-top:.9rem; padding-bottom:.9rem; } /* was .75/.75 */
+    .navbar { min-height:60px; }  /* was 56px */
+  "))
   ),
   
   navbarPage(
-    title = tagList(brand_logo, "NPI CGIC Dashboard POC"),
+    title = brand,
     theme = theme,
     
     header = div(
-      class = "container", 
-      style = "max-width:1100px;",
-      div(
-        class = "alert alert-warning mb-2",
-        "NOTE: The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
-      )
+      class = "container", style = "max-width:1100px;",
+      div(class = "alert alert-warning mb-2",
+          "NOTE: The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction.")
     ),
     
     instructions_tab,
