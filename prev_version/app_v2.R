@@ -1,16 +1,6 @@
-# app.R — CGIC POC Dashboard (Updated Version with Global Filters)
+# app.R — CGIC POC Dashboard (Complete Working Version with Time Since Last Hit)
 # ------------------------------------------------------------------------------------------
-# Changes in this version:
-# - Global sidebar filters (visible on all tabs)
-# - "Clear Filters" button added
-# - "Event Type" renamed to "Incident Type"
-# - Updated footer disclaimer with new grant number
-# - Instructions text updated to reflect checkbox controls
-# - Modal disclaimer matches header warning
-# - NIBIN tab: Added minimum incidents filter
-# - Gun selector made explicitly searchable
-# ------------------------------------------------------------------------------------------
-
+#chk
 # Load packages with error handling
 required_packages <- c(
   "shiny",
@@ -19,7 +9,6 @@ required_packages <- c(
   "leaflet",
   "leaflet.extras",
   "plotly",
-
   "networkD3",
   "readr",
   "dplyr",
@@ -311,14 +300,11 @@ sector_polys <- sectors_big$polys
 sector_labels <- sectors_big$labels
 
 # ---- Brand Logo ----
-brand_logo <- if (file.exists("www/CGIC Logo_Primary.png")) {
-  div(
-    style = "background-color: #f3f3f3ff; padding: 6px 12px; border-radius: 4px; margin-right: 15px;",
-    tags$img(
-      src = "CGIC Logo_Primary.png",
-      class = "cgic-logo",
-      alt = "Crime Gun Intelligence Centers"
-    )
+brand_logo <- if (file.exists("www/cgic-logo-reverse.png")) {
+  tags$img(
+    src = "cgic-logo-reverse.png",
+    class = "cgic-logo",
+    alt = "Crime Gun Intelligence Centers"
   )
 } else {
   NULL
@@ -326,65 +312,51 @@ brand_logo <- if (file.exists("www/CGIC Logo_Primary.png")) {
 
 # ---- UI Components ----
 
-# Instructions tab content (updated to reflect checkbox controls)
-instructions_content <- div(
-  class = "container",
-  style = "max-width:1100px;",
+# ---- UI Components ----
+instructions_tab <- tabPanel(
+  "📋 Instructions",
   div(
-    class = "polished-card",
-    h2("CGIC Dashboard — Instructions & Guidance"),
-    p(
-      "The primary goal of a Crime Gun Intelligence Center (CGIC) is to rapidly identify and investigate armed violent offenders using real-time crime gun evidence, such as cartridge casings. This mock dashboard serves as a starting point for agencies to develop their own dashboards and visualizations. Agencies are encouraged to customize the template to fit their operational needs—for example, by modifying table columns or updating visualizations."
-    ),
-    h4("How to use this dashboard"),
-    tags$ul(
-      tags$li(
-        "Use the filters in the sidebar (left) to adjust time ranges, incident types, and beats. All charts, the map, and the tables update together across all tabs."
+    class = "container",
+    style = "max-width:1100px;",
+    div(
+      class = "polished-card",
+      h2("CGIC Dashboard — Instructions & Guidance"),
+      p(
+        "The primary goal of a Crime Gun Intelligence Center (CGIC) is to rapidly identify and investigate armed violent offenders using real-time crime gun evidence, such as cartridge casings. This mock dashboard serves as a starting point for agencies to develop their own dashboards and visualizations. Agencies are encouraged to customize the template to fit their operational needs—for example, by modifying table columns or updating visualizations."
       ),
-      tags$li(
-        "On the Map & Incidents tab, use the checkboxes to toggle ",
-        strong("Points"),
-        ", ",
-        strong("Heatmap"),
-        ", and ",
-        strong("Sector boundaries"),
-        " on or off."
+      h4("How to use this dashboard"),
+      tags$ul(
+        tags$li(
+          "Use the filters at left to adjust time ranges, event types, and beats. All charts, the map, and the tables update together."
+        ),
+        tags$li(
+          "On the Map & Incidents tab, switch between ",
+          strong("Points"),
+          " and ",
+          strong("Heatmap"),
+          " and toggle sector boundaries."
+        ),
+        tags$li(
+          "On the NIBIN & Sankey tab, use the gun selector dropdown to filter the links table and highlight associated incidents on the map. Use the ",
+          em("Clear selection"),
+          " button to reset."
+        )
       ),
-      tags$li(
-        "On the NIBIN & Sankey tab, use the gun selector dropdown to filter the links table and highlight associated incidents on the map. Use the ",
-        em("Clear selection"),
-        " button to reset."
-      ),
-      tags$li(
-        "Use the ",
-        strong("Clear Filters"),
-        " button in the sidebar to reset all filters to their default values."
+      h4("Questions?"),
+      p(
+        "Visit ",
+        a(
+          href = "https://www.crimegunintelcenters.org",
+          "crimegunintelcenters.org",
+          target = "_blank"
+        ),
+        " or email ",
+        a(
+          href = "mailto:tta@policinginstitute.org",
+          "tta@policinginstitute.org"
+        ),
+        "."
       )
-    ),
-    h4("User Guide"),
-    p(
-      "For a detailed description of dashboard functionality and capabilities, please access the ",
-      a(
-        href = "#",
-        "User Guide",
-        target = "_blank"
-      ),
-      "."
-    ),
-    h4("Questions?"),
-    p(
-      "Visit ",
-      a(
-        href = "https://www.crimegunintelcenters.org",
-        "crimegunintelcenters.org",
-        target = "_blank"
-      ),
-      " or email ",
-      a(
-        href = "mailto:tta@policinginstitute.org",
-        "tta@policinginstitute.org"
-      ),
-      "."
     )
   )
 )
@@ -396,89 +368,6 @@ brand <- div(
   span(
     "NPI CGIC Dashboard Demo",
     style = "color: #eabe3f; font-weight: 600; font-size: 18px;"
-  )
-)
-
-# ---- Global Sidebar Panel (appears on all tabs) ----
-global_sidebar <- sidebarPanel(
-  width = 2,
-  div(
-    class = "sidebar-filters",
-    h4("Filters"),
-    dateRangeInput(
-      "date_range",
-      "Month range",
-      start = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(
-          min(incidents_view$month, na.rm = TRUE),
-          "month"
-        ))
-      } else {
-        as_date("2023-01-01")
-      },
-      end = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(
-          max(incidents_view$month, na.rm = TRUE),
-          "month"
-        ))
-      } else {
-        as_date("2023-12-01")
-      },
-      min = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(
-          min(incidents_view$month, na.rm = TRUE),
-          "month"
-        ))
-      } else {
-        as_date("2023-01-01")
-      },
-      max = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(
-          max(incidents_view$month, na.rm = TRUE),
-          "month"
-        ))
-      } else {
-        as_date("2023-12-01")
-      },
-      startview = "year",
-      format = "yyyy-mm-01"
-    ),
-    selectizeInput(
-      "incident_type",
-      "Incident type",
-      choices = if (nrow(incidents_view) > 0) {
-        sort(unique(incidents_view$event_type))
-      } else {
-        character(0)
-      },
-      selected = if (nrow(incidents_view) > 0) {
-        intersect(
-          c("Shots Fired", "Non-Fatal Shooting", "Homicide"),
-          unique(incidents_view$event_type)
-        )
-      } else {
-        character(0)
-      },
-      multiple = TRUE
-    ),
-    selectizeInput(
-      "beat",
-      "Beat",
-      choices = if (nrow(incidents_view) > 0) {
-        sort(unique(incidents_view$beat))
-      } else {
-        character(0)
-      },
-      multiple = TRUE
-    ),
-    checkboxInput("hits_only", "Hits only (confirmed)", value = FALSE),
-    hr(),
-    actionButton(
-      "clear_filters",
-      "Clear Filters",
-      class = "btn btn-outline-secondary btn-sm",
-      style = "width: 100%;"
-    )
   )
 )
 
@@ -623,13 +512,12 @@ ui <- tagList(
       transform: scale(1.02);
     }
     .navbar .navbar-brand .cgic-logo {
-      height: 55px;
-      max-width: 450px;
-      width: auto;
-      object-fit: contain;
+      height:56px;
+      width:auto;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     }
     @media (max-width:576px){
-      .navbar .navbar-brand .cgic-logo { height: 35px; max-width: 200px; }
+      .navbar .navbar-brand .cgic-logo { height:42px; }
       .cgic-brand span { display:none; }
     }
 
@@ -649,15 +537,6 @@ ui <- tagList(
       color: #eabe3f !important;
       font-weight: 600;
     }
-    
-    /* NIBIN controls styling */
-    .nibin-controls {
-      background: #f8f9fa;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 12px 15px;
-      margin-bottom: 15px;
-    }
   "
     ))
   ),
@@ -667,25 +546,93 @@ ui <- tagList(
     theme = theme,
 
     header = div(
-      class = "container-fluid",
+      class = "container",
+      style = "max-width:1100px;",
       div(
         class = "alert alert-warning mb-2",
-        style = "max-width: 1400px; margin: 0 auto;",
         "⚠️ NOTE: The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
       )
     ),
 
-    # Instructions Tab (standalone, no sidebar needed)
-    tabPanel(
-      "📋 Instructions",
-      instructions_content
-    ),
+    instructions_tab,
 
-    # All other tabs wrapped in sidebarLayout for global filters
     tabPanel(
       "📊 Overview",
       sidebarLayout(
-        global_sidebar,
+        sidebarPanel(
+          width = 2,
+          div(
+            class = "sidebar-filters",
+            h4("Filters"),
+            dateRangeInput(
+              "date_range",
+              "Month range",
+              start = if (nrow(incidents_view) > 0) {
+                as_date(floor_date(
+                  min(incidents_view$month, na.rm = TRUE),
+                  "month"
+                ))
+              } else {
+                as_date("2023-01-01")
+              },
+              end = if (nrow(incidents_view) > 0) {
+                as_date(floor_date(
+                  max(incidents_view$month, na.rm = TRUE),
+                  "month"
+                ))
+              } else {
+                as_date("2023-12-01")
+              },
+              min = if (nrow(incidents_view) > 0) {
+                as_date(floor_date(
+                  min(incidents_view$month, na.rm = TRUE),
+                  "month"
+                ))
+              } else {
+                as_date("2023-01-01")
+              },
+              max = if (nrow(incidents_view) > 0) {
+                as_date(floor_date(
+                  max(incidents_view$month, na.rm = TRUE),
+                  "month"
+                ))
+              } else {
+                as_date("2023-12-01")
+              },
+              startview = "year",
+              format = "yyyy-mm-01"
+            ),
+            selectizeInput(
+              "event_type",
+              "Event type",
+              choices = if (nrow(incidents_view) > 0) {
+                sort(unique(incidents_view$event_type))
+              } else {
+                character(0)
+              },
+              selected = if (nrow(incidents_view) > 0) {
+                intersect(
+                  c("Shots Fired", "Non-Fatal Shooting", "Homicide"),
+                  unique(incidents_view$event_type)
+                )
+              } else {
+                character(0)
+              },
+              multiple = TRUE
+            ),
+            selectizeInput(
+              "beat",
+              "Beat",
+              choices = if (nrow(incidents_view) > 0) {
+                sort(unique(incidents_view$beat))
+              } else {
+                character(0)
+              },
+              multiple = TRUE
+            ),
+            checkboxInput("hits_only", "Hits only (confirmed)", value = FALSE)
+          )
+        ),
         mainPanel(
           width = 10,
 
@@ -772,43 +719,37 @@ ui <- tagList(
 
     tabPanel(
       "🗺️ Map & Incidents",
-      sidebarLayout(
-        global_sidebar,
-        mainPanel(
-          width = 10,
 
-          div(
-            class = "map-controls-bar",
-            h4("Incident Map"),
-            checkboxInput("show_points", "Show Points", value = FALSE),
-            checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
-            checkboxInput("show_sectors", "Show sectors", value = FALSE)
+      div(
+        class = "map-controls-bar",
+        h4("Incident Map"),
+        checkboxInput("show_points", "Show Points", value = FALSE),
+        checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
+        checkboxInput("show_sectors", "Show sectors", value = FALSE)
+      ),
+
+      div(
+        class = "chart-card",
+        withSpinner(
+          leafletOutput("incidents_map", height = 440),
+          type = config$ui$spinner_type
+        )
+      ),
+
+      br(),
+
+      div(
+        class = "polished-card",
+        h4("Incidents"),
+        div(
+          style = paste0(
+            "max-height: ",
+            config$ui$table_height + 60,
+            "px; overflow-y: auto; border: 1px solid #eee; padding: 6px;"
           ),
-
-          div(
-            class = "chart-card",
-            withSpinner(
-              leafletOutput("incidents_map", height = 440),
-              type = config$ui$spinner_type
-            )
-          ),
-
-          br(),
-
-          div(
-            class = "polished-card",
-            h4("Incidents"),
-            div(
-              style = paste0(
-                "max-height: ",
-                config$ui$table_height + 60,
-                "px; overflow-y: auto; border: 1px solid #eee; padding: 6px;"
-              ),
-              withSpinner(
-                DTOutput("incidents_tbl"),
-                type = config$ui$spinner_type
-              )
-            )
+          withSpinner(
+            DTOutput("incidents_tbl"),
+            type = config$ui$spinner_type
           )
         )
       )
@@ -816,39 +757,33 @@ ui <- tagList(
 
     tabPanel(
       "✅ Clearance",
-      sidebarLayout(
-        global_sidebar,
-        mainPanel(
-          width = 10,
 
+      div(
+        class = "info-banner",
+        tags$strong("Demo only:"),
+        " If your data includes clearance fields, charts will use them; otherwise synthetic demo values are used."
+      ),
+
+      div(class = "section-header", "Clearance Analysis"),
+
+      fluidRow(
+        column(
+          6,
           div(
-            class = "info-banner",
-            tags$strong("Demo only:"),
-            " If your data includes clearance fields, charts will use them; otherwise synthetic demo values are used."
-          ),
-
-          div(class = "section-header", "Clearance Analysis"),
-
-          fluidRow(
-            column(
-              6,
-              div(
-                class = "chart-card",
-                withSpinner(
-                  plotlyOutput("clr_rate_by_type", height = "320px"),
-                  type = config$ui$spinner_type
-                )
-              )
-            ),
-            column(
-              6,
-              div(
-                class = "chart-card",
-                withSpinner(
-                  plotlyOutput("clr_days_by_type", height = "320px"),
-                  type = config$ui$spinner_type
-                )
-              )
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("clr_rate_by_type", height = "320px"),
+              type = config$ui$spinner_type
+            )
+          )
+        ),
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("clr_days_by_type", height = "320px"),
+              type = config$ui$spinner_type
             )
           )
         )
@@ -857,117 +792,87 @@ ui <- tagList(
 
     tabPanel(
       "🔗 NIBIN & Sankey",
-      sidebarLayout(
-        global_sidebar,
-        mainPanel(
-          width = 10,
-
-          # NIBIN-specific controls
+      fluidRow(
+        column(
+          7,
           div(
-            class = "nibin-controls",
-            fluidRow(
-              column(
-                4,
-                sliderInput(
-                  "min_incidents",
-                  "Minimum incidents per gun:",
-                  min = 1,
-                  max = 10,
-                  value = 2,
-                  step = 1
-                )
-              ),
-              column(
-                4,
-                selectizeInput(
-                  "gun_selector",
-                  "Select Gun:",
-                  choices = NULL,
-                  selected = NULL,
-                  options = list(
-                    placeholder = "Choose a gun to filter...",
-                    searchField = c("label", "value"),
-                    searchConjunction = "or"
-                  )
-                )
-              ),
-              column(
-                4,
-                div(
-                  style = "padding-top: 25px;",
+            class = "chart-card",
+            h4("Gun ↔ Incident Linkages (Confirmed Hits)"),
+            tags$small(
+              class = "helper-text",
+              "Use the gun selector below to filter the table and highlight incidents on the map."
+            ),
+            div(
+              style = "margin:12px 0;",
+              fluidRow(
+                column(
+                  6,
                   actionButton(
                     "clear_gun",
-                    "Clear Gun Selection",
+                    "Clear selection",
                     class = "btn btn-sm btn-outline-secondary"
-                  ),
-                  uiOutput("gun_selected_label", inline = TRUE)
-                )
-              )
-            )
-          ),
-
-          fluidRow(
-            column(
-              7,
-              div(
-                class = "chart-card",
-                h4("Gun ↔ Incident Linkages (Confirmed Hits)"),
-                tags$small(
-                  class = "helper-text",
-                  "Use the gun selector above to filter the table and highlight incidents on the map."
-                ),
-                withSpinner(
-                  sankeyNetworkOutput("sankey", height = "450px"),
-                  type = config$ui$spinner_type
-                )
-              )
-            ),
-            column(
-              5,
-              div(
-                class = "polished-card",
-                h4(uiOutput("links_title")),
-                div(
-                  style = "max-height: 560px; overflow-y: auto; border: 1px solid #eee; padding: 6px;",
-                  withSpinner(
-                    DTOutput("links_tbl"),
-                    type = config$ui$spinner_type
                   )
-                )
-              )
-            )
-          ),
-
-          br(),
-
-          fluidRow(
-            column(
-              6,
-              div(
-                class = "chart-card",
-                withSpinner(
-                  plotlyOutput("hits_by_gun", height = "300px"),
-                  type = config$ui$spinner_type
                 ),
-                tags$small(
-                  class = "helper-text",
-                  "Total confirmed hits for most active guns; individual gun view shows monthly hit pattern."
-                )
+                column(6, uiOutput("gun_selected_label"))
               )
             ),
-            column(
-              6,
-              div(
-                class = "chart-card",
-                withSpinner(
-                  plotlyOutput("links_over_time", height = "300px"),
-                  type = config$ui$spinner_type
-                ),
-                tags$small(
-                  class = "helper-text",
-                  "Bars = unique links; Line = average incidents per linked gun."
-                )
+            div(
+              style = "margin:12px 0;",
+              selectizeInput(
+                "gun_selector",
+                "Select Gun:",
+                choices = NULL,
+                selected = NULL,
+                options = list(placeholder = "Choose a gun to filter...")
               )
+            ),
+            withSpinner(
+              sankeyNetworkOutput("sankey", height = "450px"),
+              type = config$ui$spinner_type
+            )
+          )
+        ),
+        column(
+          5,
+          div(
+            class = "polished-card",
+            h4(uiOutput("links_title")),
+            div(
+              style = "max-height: 560px; overflow-y: auto; border: 1px solid #eee; padding: 6px;",
+              withSpinner(DTOutput("links_tbl"), type = config$ui$spinner_type)
+            )
+          )
+        )
+      ),
+
+      br(),
+
+      fluidRow(
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("hits_by_gun", height = "300px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Total confirmed hits for most active guns; individual gun view shows monthly hit pattern."
+            )
+          )
+        ),
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("links_over_time", height = "300px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Bars = unique links; Line = average incidents per linked gun."
             )
           )
         )
@@ -975,7 +880,7 @@ ui <- tagList(
     )
   ),
 
-  # Welcome Modal (disclaimer matches header warning)
+  # Welcome Modal
   tags$div(
     class = "modal fade",
     id = "welcomeModal",
@@ -1011,20 +916,17 @@ ui <- tagList(
 
           h5("💡 Tips:"),
           tags$ul(
-            tags$li(
-              "Use filters in the sidebar to refine data (filters appear on all tabs)"
-            ),
+            tags$li("Use filters in the sidebar to refine data"),
             tags$li("Toggle map layers to see different views"),
             tags$li("Select guns to filter network connections"),
-            tags$li("Hover over charts for detailed information"),
-            tags$li("Use the 'Clear Filters' button to reset all filters")
+            tags$li("Hover over charts for detailed information")
           ),
 
           div(
             class = "alert alert-warning",
             style = "margin-top: 15px;",
             tags$strong("⚠️ Note:"),
-            " The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
+            " This uses synthetic demonstration data and is not representative of any real jurisdiction."
           )
         ),
         tags$div(
@@ -1059,11 +961,10 @@ ui <- tagList(
   "
   )),
 
-  # Updated footer with new grant number
   div(
     class = "app-footer",
     HTML(
-      "This project is funded through a grant from the Bureau of Justice Assistance, Office of Justice Programs, U.S. Department of Justice. Neither the U.S. Department of Justice nor any of its components operate, control, are responsible for, or necessarily endorse, this Web site (including, without limitation, its content, technical infrastructure, and policies, and any services or tools provided). This project was supported by Grant No. 15PBJA-24-GK-04259-BSCI awarded by the Bureau of Justice Assistance."
+      "This project was supported by cooperative agreement number 2020-DG-BX-K001 awarded by the Bureau of Justice Assistance. The Bureau of Justice Assistance is a component of the Department of Justice's Office of Justice Programs, which also includes the Bureau of Justice Statistics, the National Institute of Justice, the Office of Juvenile Justice and Delinquency Prevention, the Office for Victims of Crime, and the Office of Sex Offender Sentencing, Monitoring, Apprehending, Registering, and Tracking. Points of view or opinions in this document are those of the author and do not necessarily represent the official position or policies of the U.S. Department of Justice."
     )
   )
 )
@@ -1097,54 +998,6 @@ server <- function(input, output, session) {
     }
   })
 
-  # Clear Filters button handler
-  observeEvent(input$clear_filters, {
-    # Reset date range to full range
-    updateDateRangeInput(
-      session,
-      "date_range",
-      start = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(min(incidents_view$month, na.rm = TRUE), "month"))
-      } else {
-        as_date("2023-01-01")
-      },
-      end = if (nrow(incidents_view) > 0) {
-        as_date(floor_date(max(incidents_view$month, na.rm = TRUE), "month"))
-      } else {
-        as_date("2023-12-01")
-      }
-    )
-
-    # Reset incident type to defaults
-    updateSelectizeInput(
-      session,
-      "incident_type",
-      selected = if (nrow(incidents_view) > 0) {
-        intersect(
-          c("Shots Fired", "Non-Fatal Shooting", "Homicide"),
-          unique(incidents_view$event_type)
-        )
-      } else {
-        character(0)
-      }
-    )
-
-    # Clear beat selection
-    updateSelectizeInput(session, "beat", selected = character(0))
-
-    # Uncheck hits only
-    updateCheckboxInput(session, "hits_only", value = FALSE)
-
-    # Reset min incidents slider
-    updateSliderInput(session, "min_incidents", value = 2)
-
-    # Clear gun selection
-    selected_gun(NULL)
-    updateSelectizeInput(session, "gun_selector", selected = "ALL")
-
-    showNotification("Filters cleared", type = "message", duration = 2)
-  })
-
   in_range <- reactive({
     req(input$date_range)
     function(x_month) {
@@ -1156,7 +1009,7 @@ server <- function(input, output, session) {
     }
   })
 
-  # Filtered data reactives (updated to use incident_type input)
+  # Filtered data reactives
   incidents_f <- reactive({
     if (nrow(incidents_view) == 0) {
       return(incidents_view)
@@ -1168,8 +1021,8 @@ server <- function(input, output, session) {
           filter(
             in_range()(month),
             event_type %in%
-              (if (length(input$incident_type)) {
-                input$incident_type
+              (if (length(input$event_type)) {
+                input$event_type
               } else {
                 unique(event_type)
               }),
@@ -1215,7 +1068,7 @@ server <- function(input, output, session) {
       {
         d <- acquisitions_view %>% filter(in_range()(month))
 
-        if (length(input$beat) || length(input$incident_type)) {
+        if (length(input$beat) || length(input$event_type)) {
           inc_ids <- incidents_f()$incident_id
           if (length(inc_ids)) {
             d <- d %>% filter(is.na(incident_id) | incident_id %in% inc_ids)
@@ -1243,7 +1096,7 @@ server <- function(input, output, session) {
           d <- d %>% filter(is_hit == 1)
         }
 
-        if (length(input$beat) || length(input$incident_type)) {
+        if (length(input$beat) || length(input$event_type)) {
           keep <- lead_ids_by_incfilter()
           d <- if (length(keep)) d %>% filter(lead_id %in% keep) else d[0, ]
         }
@@ -1338,14 +1191,11 @@ server <- function(input, output, session) {
     compute_edges(leads_f(), links_view)
   })
 
-  # Slim edges for Sankey diagram (updated to respect min_incidents filter)
+  # Slim edges for Sankey diagram
   edges_slim <- reactive({
     if (nrow(leads_f()) == 0 || nrow(links_view) == 0) {
       return(data.frame())
     }
-
-    # Get min_incidents value (default to 2 if not set)
-    min_inc <- if (!is.null(input$min_incidents)) input$min_incidents else 2
 
     tryCatch(
       {
@@ -1374,10 +1224,9 @@ server <- function(input, output, session) {
           ungroup() %>%
           select(-.rnd)
 
-        # Apply minimum incidents filter (use min_inc from input)
         top_guns <- capped %>%
           count(firearm_id, name = "deg") %>%
-          filter(deg >= min_inc) %>%
+          filter(deg >= config$MIN_DEGREE) %>%
           arrange(desc(deg)) %>%
           slice_head(n = config$MAX_GUNS) %>%
           pull(firearm_id)
@@ -1420,7 +1269,7 @@ server <- function(input, output, session) {
         "gun_selector",
         choices = all_choices,
         selected = "ALL"
-      )
+      ) # Default to "All Guns"
     } else {
       updateSelectizeInput(session, "gun_selector", choices = character(0))
     }
@@ -1435,6 +1284,7 @@ server <- function(input, output, session) {
           # Clear selection to show all guns
           selected_gun(NULL)
           leafletProxy("incidents_map") %>% clearGroup("gun_sel")
+          #           showNotification("Showing all guns", type = "message", duration = 2)
         } else {
           # Select specific gun
           gun_name <- paste0("Gun:", input$gun_selector)
@@ -1593,7 +1443,7 @@ server <- function(input, output, session) {
 
     pct <- monthly %>%
       left_join(totals, by = "month") %>%
-      mutate(pct = n / total * 100)
+      mutate(pct = n / total * 100) # Convert to percentage manually
 
     plot_ly(
       pct,
@@ -1962,7 +1812,7 @@ server <- function(input, output, session) {
               "topright",
               pal = pal,
               values = sort(unique(df$event_type)),
-              title = "Incident type",
+              title = "Event type",
               opacity = 0.8
             )
         }
