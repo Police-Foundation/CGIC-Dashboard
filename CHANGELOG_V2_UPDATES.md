@@ -1,66 +1,117 @@
-# CGIC Dashboard V2 Updates - Change Summary
+# CGIC Dashboard — Change Summary
 
-## Overview
-This update addresses all feedback items from `Mock_Dashboard_Feedback_V2.docx` (except data-related changes which were out of scope).
+## V3 Updates (March 2026)
 
----
-
-## Changes Made
-
-### 1. ✅ Global Sidebar Filters
-**What:** Filters now appear on ALL tabs (Overview, Map & Incidents, Clearance, NIBIN & Sankey)
-**Why:** Users no longer need to switch back to Overview to change or see filter settings
-**How:** Restructured UI to use `sidebarLayout()` wrapping each tab's content
-
-### 2. ✅ Clear Filters Button
-**What:** Added "Clear Filters" button at bottom of sidebar
-**Why:** Allows users to reset all filters to defaults without manually adjusting each one
-**Resets:** Date range, incident type, beat, hits only checkbox, min incidents slider, gun selection
-
-### 3. ✅ Renamed "Event Type" → "Incident Type"
-**What:** Filter label changed from "Event type" to "Incident type"
-**Where:** Sidebar filter, map legend
-**Note:** Internal data column still uses `event_type` for compatibility
-
-### 4. ✅ Updated Footer Disclaimer
-**What:** New grant number and language per BJA requirements
-**New text:** 
-> "This project is funded through a grant from the Bureau of Justice Assistance, Office of Justice Programs, U.S. Department of Justice. Neither the U.S. Department of Justice nor any of its components operate, control, are responsible for, or necessarily endorse, this Web site (including, without limitation, its content, technical infrastructure, and policies, and any services or tools provided). This project was supported by Grant No. 15PBJA-24-GK-04259-BSCI awarded by the Bureau of Justice Assistance."
-
-### 5. ✅ Updated Instructions Tab
-- **Bullet 2:** Updated to reflect checkbox controls (was referencing old radio buttons)
-- **Clear Filters:** Moved to its own bullet point
-- **User Guide:** Added placeholder link for future User Guide document
-
-### 6. ✅ Modal Disclaimer Matches Header
-**What:** Welcome modal warning text now matches the header banner exactly
-**Text:** "The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
-
-### 7. ✅ NIBIN Tab: Minimum Incidents Filter
-**What:** Added slider control "Minimum incidents per gun" (1-10, default 2)
-**Why:** Allows executives to focus on guns with multiple incidents (e.g., 3+ linked incidents)
-**Effect:** Filters Sankey diagram and related charts to show only guns meeting threshold
-
-### 8. ✅ Gun Selector Searchability
-**What:** Explicitly configured selectizeInput with search options
-**How:** Added `searchField` and `searchConjunction` options
+This update addresses BJA and internal review feedback on terminology, usability, filtering, and layout.
 
 ---
 
-## NOT Changed (Out of Scope per Instructions)
+### UI Architecture
 
-| Feedback Item | Reason |
-|--------------|--------|
-| Add Guns Recovered/Seized from traffic stops | Requires new data/event types |
-| Add POC field (name/rank) to tables | Requires new data columns |
-| Fix Justified/Accidental event types | Data issue - categories may not exist in dataset |
+#### Migrated to `page_navbar` with Single Global Sidebar
+**What:** Replaced duplicated `sidebarLayout(global_sidebar, ...)` on each tab with bslib's `page_navbar(sidebar = ...)` architecture
+**Why:** The old approach created duplicate input IDs in the DOM, causing filters to not visually sync across tabs and checkbox inputs to not work reliably
+**Result:** All filters now exist as a single instance — no sync issues, Clear Filters works correctly on every tab
+
+#### Smart Sidebar Auto-Toggle
+**What:** Sidebar automatically closes on the Instructions tab and opens on all data tabs (Overview, Map, Clearance, NIBIN & Sankey)
+**Why:** Instructions page doesn't need filters and benefits from full-width layout; data tabs need filters immediately visible
+**How:** Server-side `observeEvent` on `input$main_nav` with `sidebar_toggle()`
+
+#### Incident Type Filter Changed to Checkboxes
+**What:** Replaced `selectizeInput` with `checkboxGroupInput` for incident type filtering
+**Why:** Old approach required users to click items and hit delete to filter — unintuitive. Checkboxes are immediately obvious: uncheck to exclude
+**Default:** All incident types checked
 
 ---
 
-## Files
+### Terminology & Language
 
-- **app_updated.R** — Complete updated dashboard (2,257 lines)
-- **CHANGELOG_V2_UPDATES.md** — This summary document
+#### Removed "Confirmed Hits" Language
+**What:** Replaced "Confirmed Hits" with "Leads" or "Hits" per BJA best practices
+**Where:**
+- NIBIN & Sankey page: "Gun ↔ Incident Linkages" (was "...Confirmed Hits")
+- NIBIN & Sankey page: "Top Gun ↔ Incident Links" (was "...links (Confirmed Hits; Simplified)")
+- NIBIN & Sankey page: helper text updated to "NIBIN leads" language
+- Overview page: chart title "NIBIN Leads & Hits" (was "...& Confirmed Hits")
+- Overview page: helper text "Hits = links vetted by personnel" (was "confirmed links")
+- Sidebar: checkbox label "NIBIN leads only" (was "Hits only (confirmed)")
+
+#### "Event Type" → "Incident Type" in Tables
+**What:** Added `colnames` to DT tables so column headers display "Incident Type" instead of raw `event_type`
+**Where:** Incidents table (Map page), Links table (NIBIN page)
+
+#### Capitalized "Links" in Table Title
+**What:** "Top Gun ↔ Incident links" → "Top Gun ↔ Incident Links" for consistency
+
+---
+
+### Colors & Visualization
+
+#### Accidental & Justified Shooting Colors
+**What:** Added distinct colors for Accidental (green) and Justified (navy) incident types
+**Where:**
+- `pal` colorFactor for map markers (was defaulting to grey for both)
+- `event_colors` in the Overview trend chart (lines were invisible before)
+- Default filter selection (both types now included by default)
+
+---
+
+### Map Enhancements
+
+#### Beat Boundary Overlay
+**What:** Added "Show beats" checkbox on Map page that draws approximate beat boundaries
+**How:** Voronoi tessellation from beat centroids (same technique as existing sector overlay), drawn with blue dashed lines and labels
+**Note:** Uses approximate boundaries computed from incident locations since no official beat boundary files exist
+
+---
+
+### NIBIN & Sankey Enhancements
+
+#### Sankey Filters from Table Selection
+**What:** Clicking a row in the Links table now filters the Sankey diagram to show only the guns connected to that incident and their full network
+**How:** Added `edges_for_sankey` reactive that reads `input$links_tbl_rows_selected` and filters edges; table uses single-row selection
+
+---
+
+### Layout & Footer
+
+#### Footer Moved to Instructions Page Only
+**What:** BJA disclaimer footer now appears only on the Instructions tab, not on data tabs
+**Why:** Fixed footer was overlapping charts; `page_navbar` footer was rendering mid-page on some tabs
+
+#### Date Range Input Readability
+**What:** Date range inputs now stack vertically in the sidebar with full-width inputs
+**Why:** At sidebar width, side-by-side date inputs were too narrow to show the selected dates
+**How:** CSS flexbox override on `.input-daterange`
+
+---
+
+## V2 Updates (Previous)
+
+### 1. Global Sidebar Filters
+Filters appear on all tabs via sidebar layout
+
+### 2. Clear Filters Button
+Resets all filters to defaults
+
+### 3. Renamed "Event Type" → "Incident Type"
+Filter label updated; internal data column unchanged
+
+### 4. Updated Footer Disclaimer
+New grant number per BJA requirements (15PBJA-24-GK-04259-BSCI)
+
+### 5. Updated Instructions Tab
+Reflects checkbox controls, Clear Filters bullet, User Guide placeholder
+
+### 6. Modal Disclaimer Matches Header
+Welcome modal warning text matches header banner
+
+### 7. NIBIN Tab: Minimum Incidents Filter
+Slider control (1-10, default 2) filters Sankey to guns meeting threshold
+
+### 8. Gun Selector Searchability
+Configured with `searchField` and `searchConjunction` options
 
 ---
 
@@ -68,41 +119,25 @@ This update addresses all feedback items from `Mock_Dashboard_Feedback_V2.docx` 
 
 After deploying, verify:
 
-- [ ] Sidebar filters appear on Overview, Map, Clearance, and NIBIN tabs
-- [ ] "Clear Filters" button resets all filters
-- [ ] Filter label says "Incident type" not "Event type"
-- [ ] Footer shows new grant number (15PBJA-24-GK-04259-BSCI)
-- [ ] Instructions tab shows updated bullet points
-- [ ] Welcome modal disclaimer matches header warning
-- [ ] NIBIN tab has "Minimum incidents per gun" slider
-- [ ] Slider filters Sankey diagram appropriately
-- [ ] Gun selector dropdown is searchable
+- [ ] Sidebar is hidden on Instructions tab, visible on all other tabs
+- [ ] Sidebar toggle arrow opens/closes sidebar manually on any tab
+- [ ] Incident type checkboxes filter charts when unchecked
+- [ ] Clear Filters button resets all controls and updates charts
+- [ ] Accidental and Justified types show with distinct colors on Overview trend chart
+- [ ] Accidental and Justified types show with distinct colors on Map (not grey)
+- [ ] Tables show "Incident Type" column header (not "event_type")
+- [ ] No "Confirmed Hits" language anywhere in the app
+- [ ] "Links" is capitalized in NIBIN table title
+- [ ] Beat boundaries display on map when "Show beats" is checked
+- [ ] Clicking a row in the Links table filters the Sankey diagram
+- [ ] Date range inputs are readable (not cut off) in sidebar
+- [ ] Footer disclaimer appears only on Instructions page
 - [ ] All existing functionality still works
 
 ---
 
-## Logo Update
+## Files
 
-**Note:** You mentioned a new cropped logo is coming from BJA. When you receive it:
-1. Replace `www/cgic-logo-reverse.png` with the new file
-2. Keep the same filename, or update the `brand_logo` section (around line 310)
-
----
-
-## User Guide Link
-
-Currently links to `#` (placeholder). When the User Guide is ready:
-1. Find this line in the Instructions content (around line 348):
-   ```r
-   href = "#",
-   ```
-2. Replace `#` with the actual URL
-
----
-
-## Deployment
-
-1. Replace your existing `app.R` with `app_updated.R`
-2. Rename to `app.R`
-3. Ensure `data/poc/` folder and `www/` folder are in place
-4. Run with `shiny::runApp()`
+- **app.R** — Complete dashboard application
+- **CHANGELOG_V2_UPDATES.md** — This summary document
+- **README.md** — Project overview and setup instructions
