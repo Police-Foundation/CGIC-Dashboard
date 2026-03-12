@@ -969,7 +969,7 @@ page_navbar(
           h4("Gun ↔ Incident Linkages"),
           tags$small(
             class = "helper-text",
-            "Use the gun selector above to filter the table and highlight incidents on the map."
+            "Select a gun above to filter the network. Click a row in the table to drill into a specific incident."
           ),
           withSpinner(
             sankeyNetworkOutput("sankey", height = "450px"),
@@ -2140,10 +2140,27 @@ server <- function(input, output, session) {
     ed <- edges_slim()
     if (nrow(ed) == 0) return(data.frame())
 
+    gid <- selected_gun_id()
+
+    # When a gun is selected, filter Sankey to that gun's network
+    if (!is.null(gid)) {
+      # Find all incidents connected to the selected gun
+      gun_incidents <- ed %>%
+        filter(firearm_id == gid) %>%
+        pull(incident_id) %>%
+        unique()
+      # Show all guns connected to those incidents (full network around selected gun)
+      connected_guns <- ed %>%
+        filter(incident_id %in% gun_incidents) %>%
+        pull(firearm_id) %>%
+        unique()
+      ed <- ed %>% filter(firearm_id %in% connected_guns)
+    }
+
+    # Further narrow if a specific table row is clicked
     sel_rows <- input$links_tbl_rows_selected
     if (length(sel_rows) > 0) {
       # Reconstruct the displayed table to find selected incident
-      gid <- selected_gun_id()
       displayed_ed <- if (!is.null(gid)) {
         ed %>% filter(firearm_id == gid)
       } else {
