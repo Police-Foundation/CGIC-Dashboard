@@ -82,13 +82,16 @@ CGIC <- list(
   green = "#1a4b2e",
   blue = "#4e6ab2",
   light = "#E8E8E8",
-  white = "#ffffff"
+  white = "#ffffff",
+  vermillion = "#D55E00",
+  skyblue = "#56B4E9",
+  blgreen = "#009E73"
 )
 
 brand_colors <- c(CGIC$blue, CGIC$gold, CGIC$maroon, CGIC$green, CGIC$navy)
 
 pal <- colorFactor(
-  c(CGIC$maroon, CGIC$gold, CGIC$blue, CGIC$green, CGIC$navy),
+  c(CGIC$vermillion, CGIC$gold, CGIC$blue, CGIC$skyblue, CGIC$blgreen),
   levels = c("Homicide", "Non-Fatal Shooting", "Shots Fired", "Accidental", "Justified"),
   na.color = CGIC$dkgrey
 )
@@ -393,7 +396,7 @@ instructions_content <- div(
     h4("How to use this dashboard"),
     tags$ul(
       tags$li(
-        "Use the filters in the sidebar (left) to adjust time ranges, incident types, and beats. All charts, the map, and the tables update together across all tabs."
+        "Use the filters in the sidebar (left) to adjust time ranges, incident types, and sectors. All charts, the map, and the tables update together across all tabs."
       ),
       tags$li(
         "On the Map & Incidents tab, use the checkboxes to toggle ",
@@ -401,7 +404,7 @@ instructions_content <- div(
         ", ",
         strong("Heatmap"),
         ", and ",
-        strong("Sector boundaries"),
+        strong("District boundaries"),
         " on or off."
       ),
       tags$li(
@@ -522,7 +525,7 @@ global_sidebar <- sidebar(
     ),
     selectizeInput(
       "beat",
-      "Beat",
+      "Sector",
       choices = if (nrow(incidents_view) > 0) {
         sort(unique(incidents_view$beat))
       } else {
@@ -848,8 +851,8 @@ page_navbar(
       h4("Incident Map"),
       checkboxInput("show_points", "Show Points", value = FALSE),
       checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
-      checkboxInput("show_beats", "Show beats", value = FALSE),
-      checkboxInput("show_sectors", "Show sectors", value = FALSE)
+      checkboxInput("show_beats", "Show sectors", value = FALSE),
+      checkboxInput("show_sectors", "Show districts", value = FALSE)
     ),
 
     div(
@@ -1568,9 +1571,17 @@ server <- function(input, output, session) {
     event_colors <- c(
       "Shots Fired" = CGIC$blue,
       "Non-Fatal Shooting" = CGIC$gold,
-      "Homicide" = CGIC$maroon,
-      "Accidental" = CGIC$green,
-      "Justified" = CGIC$navy
+      "Homicide" = CGIC$vermillion,
+      "Accidental" = CGIC$skyblue,
+      "Justified" = CGIC$blgreen
+    )
+
+    event_linetypes <- c(
+      "Shots Fired" = "solid",
+      "Non-Fatal Shooting" = "dash",
+      "Homicide" = "dot",
+      "Accidental" = "dashdot",
+      "Justified" = "longdash"
     )
 
     plot_ly(
@@ -1579,6 +1590,8 @@ server <- function(input, output, session) {
       y = ~n,
       color = ~event_type,
       colors = event_colors,
+      linetype = ~event_type,
+      linetypes = event_linetypes,
       type = "scatter",
       mode = "lines+markers",
       hovertemplate = "%{x|%Y-%m}<br>%{fullData.name}: %{y}<extra></extra>"
@@ -1647,12 +1660,19 @@ server <- function(input, output, session) {
       left_join(totals, by = "month") %>%
       mutate(pct = n / total * 100)
 
+    clearance_colors <- c(
+      "Arrest" = CGIC$blue,
+      "Exception" = CGIC$gold,
+      "Open" = CGIC$dkgrey,
+      "Unfounded" = CGIC$vermillion
+    )
+
     plot_ly(
       pct,
       x = ~month,
       y = ~pct,
       color = ~clearance_type,
-      colors = brand_colors,
+      colors = clearance_colors,
       type = "bar",
       hovertemplate = "%{x|%Y-%m}<br>%{fullData.name}: %{y:.1f}%<extra></extra>"
     ) %>%
@@ -1686,12 +1706,26 @@ server <- function(input, output, session) {
       summarise(avg_days = mean(ttc_days, na.rm = TRUE), .groups = "drop") %>%
       arrange(month)
 
+    clr_line_colors <- c(
+      "Arrest" = CGIC$blue,
+      "Exception" = CGIC$gold,
+      "Unfounded" = CGIC$vermillion
+    )
+
+    clr_linetypes <- c(
+      "Arrest" = "solid",
+      "Exception" = "dash",
+      "Unfounded" = "dot"
+    )
+
     plot_ly(
       m,
       x = ~month,
       y = ~avg_days,
       color = ~clearance_type,
-      colors = brand_colors,
+      colors = clr_line_colors,
+      linetype = ~clearance_type,
+      linetypes = clr_linetypes,
       type = "scatter",
       mode = "lines+markers",
       hovertemplate = "%{x|%Y-%m}<br>%{fullData.name}: %{y:.1f} days<extra></extra>"
@@ -2061,7 +2095,7 @@ server <- function(input, output, session) {
                 occurred_dt,
                 "<br><b>Type:</b> ",
                 event_type,
-                "<br><b>Beat/Sector:</b> ",
+                "<br><b>Sector/District:</b> ",
                 beat,
                 " / ",
                 sector,
@@ -2096,7 +2130,7 @@ server <- function(input, output, session) {
 
     datatable(
       display_data,
-      colnames = c("Incident ID", "Date", "Incident Type", "Beat", "Sector", "Casings"),
+      colnames = c("Incident ID", "Date", "Incident Type", "Sector", "District", "Casings"),
       selection = "multiple",
       rownames = FALSE,
       options = list(
@@ -2278,7 +2312,7 @@ server <- function(input, output, session) {
 
     datatable(
       edx,
-      colnames = c("Firearm ID", "Incident ID", "Date", "Incident Type", "Beat", "Sector"),
+      colnames = c("Firearm ID", "Incident ID", "Date", "Incident Type", "Sector", "District"),
       selection = "single",
       rownames = FALSE,
       options = list(
