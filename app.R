@@ -851,8 +851,8 @@ page_navbar(
       h4("Incident Map"),
       checkboxInput("show_points", "Show Points", value = FALSE),
       checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
-      checkboxInput("show_beats", "Show sectors", value = FALSE),
-      checkboxInput("show_sectors", "Show districts", value = FALSE)
+      checkboxInput("show_beats", "Show Districts", value = FALSE),
+      checkboxInput("show_sectors", "Show Sectors", value = FALSE)
     ),
 
     div(
