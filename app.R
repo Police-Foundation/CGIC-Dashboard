@@ -525,7 +525,7 @@ global_sidebar <- sidebar(
     ),
     selectizeInput(
       "beat",
-      "Sector",
+      "District",
       choices = if (nrow(incidents_view) > 0) {
         sort(unique(incidents_view$beat))
       } else {
@@ -2095,7 +2095,7 @@ server <- function(input, output, session) {
                 occurred_dt,
                 "<br><b>Type:</b> ",
                 event_type,
-                "<br><b>Sector/District:</b> ",
+                "<br><b>District/Sector:</b> ",
                 beat,
                 " / ",
                 sector,
@@ -2130,7 +2130,7 @@ server <- function(input, output, session) {
 
     datatable(
       display_data,
-      colnames = c("Incident ID", "Date", "Incident Type", "Sector", "District", "Casings"),
+      colnames = c("Incident ID", "Date", "Incident Type", "District", "Sector", "Casings"),
       selection = "multiple",
       rownames = FALSE,
       options = list(
@@ -2312,7 +2312,7 @@ server <- function(input, output, session) {
 
     datatable(
       edx,
-      colnames = c("Firearm ID", "Incident ID", "Date", "Incident Type", "Sector", "District"),
+      colnames = c("Firearm ID", "Incident ID", "Date", "Incident Type", "District", "Sector"),
       selection = "single",
       rownames = FALSE,
       options = list(
