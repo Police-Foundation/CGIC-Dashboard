@@ -92,7 +92,13 @@ brand_colors <- c(CGIC$blue, CGIC$gold, CGIC$maroon, CGIC$green, CGIC$navy)
 
 pal <- colorFactor(
   c(CGIC$vermillion, CGIC$gold, CGIC$blue, CGIC$skyblue, CGIC$blgreen),
-  levels = c("Homicide", "Non-Fatal Shooting", "Shots Fired", "Accidental", "Justified"),
+  levels = c(
+    "Homicide",
+    "Non-Fatal Shooting",
+    "Shots Fired",
+    "Accidental",
+    "Justified"
+  ),
   na.color = CGIC$dkgrey
 )
 
@@ -432,14 +438,14 @@ instructions_content <- div(
     p(
       "Visit ",
       a(
-        href = "https://www.crimegunintelcenters.org",
+        href = "https://crimegunintelcenters.org/wp-content/uploads/2026/07/CGIC-Dashboard-User-Guide.pdf",
         "crimegunintelcenters.org",
         target = "_blank"
       ),
       " or email ",
       a(
-        href = "mailto:tta@policinginstitute.org",
-        "tta@policinginstitute.org"
+        href = "mailto: CGIC@policinginstitute.org",
+        " CGIC@policinginstitute.org"
       ),
       "."
     )
@@ -546,16 +552,16 @@ global_sidebar <- sidebar(
 
 # ---- Main UI ----
 ui <- tagList(
-page_navbar(
-  id = "main_nav",
-  title = brand,
-  theme = theme,
-  sidebar = global_sidebar,
+  page_navbar(
+    id = "main_nav",
+    title = brand,
+    theme = theme,
+    sidebar = global_sidebar,
 
-  header = tagList(
-    tags$head(
-      tags$style(HTML(
-        "
+    header = tagList(
+      tags$head(
+        tags$style(HTML(
+          "
     /* ===== LEVEL 3 POLISH STYLES ===== */
 
     /* Card System */
@@ -743,252 +749,173 @@ page_navbar(
       margin-bottom: 15px;
     }
   "
-      ))
-    ),
-    div(
-      class = "container-fluid",
+        ))
+      ),
       div(
-        class = "alert alert-warning mb-2",
-        style = "max-width: 1400px; margin: 0 auto;",
-        "⚠️ NOTE: The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
-      )
-    )
-  ),
-
-  # Instructions Tab
-  nav_panel(
-    "📋 Instructions",
-    instructions_content
-  ),
-
-  # Overview Tab
-  nav_panel(
-    "📊 Overview",
-    div(class = "section-header", "📈 Incident Trends"),
-    fluidRow(
-      column(
-        6,
+        class = "container-fluid",
         div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("incidents_trend", height = "280px"),
-            type = config$ui$spinner_type
-          ),
-          tags$small(
-            class = "helper-text",
-            "Incidents = Shots Fired, Non-Fatal Shooting, Homicide."
-          )
-        )
-      ),
-      column(
-        6,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("entries_source", height = "280px"),
-            type = config$ui$spinner_type
-          ),
-          tags$small(
-            class = "helper-text",
-            "NIBIN entries by source: Scene (cartridge cases) vs Test-Fire (seized firearm test)."
-          )
+          class = "alert alert-warning mb-2",
+          style = "max-width: 1400px; margin: 0 auto;",
+          "⚠️ NOTE: The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
         )
       )
     ),
 
-    div(class = "section-header", "🎯 NIBIN Performance"),
-    fluidRow(
-      column(
-        4,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("leads_hits", height = "280px"),
-            type = config$ui$spinner_type
-          ),
-          tags$small(
-            class = "helper-text",
-            "Leads = NIBIN correlation notifications; Hits = links vetted by personnel."
-          )
-        )
-      ),
-      column(
-        4,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("tat_line_p48", height = "280px"),
-            type = config$ui$spinner_type
-          ),
-          tags$small(
-            class = "helper-text",
-            "Lead turnaround (Acquisition → Lead); KPI = % of leads generated ≤ 48 hours."
-          )
-        )
-      ),
-      column(
-        4,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("casings_combo", height = "280px"),
-            type = config$ui$spinner_type
-          ),
-          tags$small(
-            class = "helper-text",
-            "Bars = casings collected; Line = % scenes with any casings."
-          )
-        )
-      )
-    )
-  ),
-
-  # Map & Incidents Tab
-  nav_panel(
-    "🗺️ Map & Incidents",
-    div(
-      class = "map-controls-bar",
-      h4("Incident Map"),
-      checkboxInput("show_points", "Show Points", value = FALSE),
-      checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
-      checkboxInput("show_beats", "Show Districts", value = FALSE),
-      checkboxInput("show_sectors", "Show Sectors", value = FALSE)
+    # Instructions Tab
+    nav_panel(
+      "📋 Instructions",
+      instructions_content
     ),
 
-    div(
-      class = "chart-card",
-      withSpinner(
-        leafletOutput("incidents_map", height = 440),
-        type = config$ui$spinner_type
-      )
-    ),
-
-    br(),
-
-    div(
-      class = "polished-card",
-      h4("Incidents"),
-      div(
-        style = paste0(
-          "max-height: ",
-          config$ui$table_height + 60,
-          "px; overflow-y: auto; border: 1px solid #eee; padding: 6px;"
+    # Overview Tab
+    nav_panel(
+      "📊 Overview",
+      div(class = "section-header", "📈 Incident Trends"),
+      fluidRow(
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("incidents_trend", height = "280px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Incidents = Shots Fired, Non-Fatal Shooting, Homicide."
+            )
+          )
         ),
-        withSpinner(
-          DTOutput("incidents_tbl"),
-          type = config$ui$spinner_type
-        )
-      )
-    )
-  ),
-
-  # Clearance Tab
-  nav_panel(
-    "✅ Clearance",
-    div(
-      class = "info-banner",
-      tags$strong("Demo only:"),
-      " If your data includes clearance fields, charts will use them; otherwise synthetic demo values are used."
-    ),
-
-    div(class = "section-header", "Clearance Analysis"),
-
-    fluidRow(
-      column(
-        6,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("clr_rate_by_type", height = "320px"),
-            type = config$ui$spinner_type
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("entries_source", height = "280px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "NIBIN entries by source: Scene (cartridge cases) vs Test-Fire (seized firearm test)."
+            )
           )
         )
       ),
-      column(
-        6,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("clr_days_by_type", height = "320px"),
-            type = config$ui$spinner_type
-          )
-        )
-      )
-    )
-  ),
 
-  # NIBIN & Sankey Tab
-  nav_panel(
-    "🔗 NIBIN & Sankey",
-    # NIBIN-specific controls
-    div(
-      class = "nibin-controls",
+      div(class = "section-header", "🎯 NIBIN Performance"),
       fluidRow(
         column(
           4,
-          sliderInput(
-            "min_incidents",
-            "Minimum incidents per gun:",
-            min = 1,
-            max = 10,
-            value = 2,
-            step = 1
-          )
-        ),
-        column(
-          4,
-          selectizeInput(
-            "gun_selector",
-            "Select Gun:",
-            choices = NULL,
-            selected = NULL,
-            options = list(
-              placeholder = "Choose a gun to filter...",
-              searchField = c("label", "value"),
-              searchConjunction = "or"
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("leads_hits", height = "280px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Leads = NIBIN correlation notifications; Hits = links vetted by personnel."
             )
           )
         ),
         column(
           4,
           div(
-            style = "padding-top: 25px;",
-            actionButton(
-              "clear_gun",
-              "Clear Gun Selection",
-              class = "btn btn-sm btn-outline-secondary"
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("tat_line_p48", height = "280px"),
+              type = config$ui$spinner_type
             ),
-            uiOutput("gun_selected_label", inline = TRUE)
+            tags$small(
+              class = "helper-text",
+              "Lead turnaround (Acquisition → Lead); KPI = % of leads generated ≤ 48 hours."
+            )
+          )
+        ),
+        column(
+          4,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("casings_combo", height = "280px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Bars = casings collected; Line = % scenes with any casings."
+            )
           )
         )
       )
     ),
 
-    fluidRow(
-      column(
-        7,
+    # Map & Incidents Tab
+    nav_panel(
+      "🗺️ Map & Incidents",
+      div(
+        class = "map-controls-bar",
+        h4("Incident Map"),
+        checkboxInput("show_points", "Show Points", value = FALSE),
+        checkboxInput("show_heatmap", "Show Heatmap", value = FALSE),
+        checkboxInput("show_beats", "Show Districts", value = FALSE),
+        checkboxInput("show_sectors", "Show Sectors", value = FALSE)
+      ),
+
+      div(
+        class = "chart-card",
+        withSpinner(
+          leafletOutput("incidents_map", height = 440),
+          type = config$ui$spinner_type
+        )
+      ),
+
+      br(),
+
+      div(
+        class = "polished-card",
+        h4("Incidents"),
         div(
-          class = "chart-card",
-          h4("Gun ↔ Incident Linkages"),
-          tags$small(
-            class = "helper-text",
-            "Select a gun above to filter the network. Click a row in the table to drill into a specific incident."
+          style = paste0(
+            "max-height: ",
+            config$ui$table_height + 60,
+            "px; overflow-y: auto; border: 1px solid #eee; padding: 6px;"
           ),
           withSpinner(
-            sankeyNetworkOutput("sankey", height = "450px"),
+            DTOutput("incidents_tbl"),
             type = config$ui$spinner_type
           )
         )
+      )
+    ),
+
+    # Clearance Tab
+    nav_panel(
+      "✅ Clearance",
+      div(
+        class = "info-banner",
+        tags$strong("Demo only:"),
+        " If your data includes clearance fields, charts will use them; otherwise synthetic demo values are used."
       ),
-      column(
-        5,
-        div(
-          class = "polished-card",
-          h4(uiOutput("links_title")),
+
+      div(class = "section-header", "Clearance Analysis"),
+
+      fluidRow(
+        column(
+          6,
           div(
-            style = "max-height: 560px; overflow-y: auto; border: 1px solid #eee; padding: 6px;",
+            class = "chart-card",
             withSpinner(
-              DTOutput("links_tbl"),
+              plotlyOutput("clr_rate_by_type", height = "320px"),
+              type = config$ui$spinner_type
+            )
+          )
+        ),
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("clr_days_by_type", height = "320px"),
               type = config$ui$spinner_type
             )
           )
@@ -996,115 +923,193 @@ page_navbar(
       )
     ),
 
-    br(),
-
-    fluidRow(
-      column(
-        6,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("hits_by_gun", height = "300px"),
-            type = config$ui$spinner_type
+    # NIBIN & Sankey Tab
+    nav_panel(
+      "🔗 NIBIN & Sankey",
+      # NIBIN-specific controls
+      div(
+        class = "nibin-controls",
+        fluidRow(
+          column(
+            4,
+            sliderInput(
+              "min_incidents",
+              "Minimum incidents per gun:",
+              min = 1,
+              max = 10,
+              value = 2,
+              step = 1
+            )
           ),
-          tags$small(
-            class = "helper-text",
-            "Total NIBIN leads for most active guns; individual gun view shows monthly lead pattern."
+          column(
+            4,
+            selectizeInput(
+              "gun_selector",
+              "Select Gun:",
+              choices = NULL,
+              selected = NULL,
+              options = list(
+                placeholder = "Choose a gun to filter...",
+                searchField = c("label", "value"),
+                searchConjunction = "or"
+              )
+            )
+          ),
+          column(
+            4,
+            div(
+              style = "padding-top: 25px;",
+              actionButton(
+                "clear_gun",
+                "Clear Gun Selection",
+                class = "btn btn-sm btn-outline-secondary"
+              ),
+              uiOutput("gun_selected_label", inline = TRUE)
+            )
           )
         )
       ),
-      column(
-        6,
-        div(
-          class = "chart-card",
-          withSpinner(
-            plotlyOutput("links_over_time", height = "300px"),
-            type = config$ui$spinner_type
+
+      fluidRow(
+        column(
+          7,
+          div(
+            class = "chart-card",
+            h4("Gun ↔ Incident Linkages"),
+            tags$small(
+              class = "helper-text",
+              "Select a gun above to filter the network. Click a row in the table to drill into a specific incident."
+            ),
+            withSpinner(
+              sankeyNetworkOutput("sankey", height = "450px"),
+              type = config$ui$spinner_type
+            )
+          )
+        ),
+        column(
+          5,
+          div(
+            class = "polished-card",
+            h4(uiOutput("links_title")),
+            div(
+              style = "max-height: 560px; overflow-y: auto; border: 1px solid #eee; padding: 6px;",
+              withSpinner(
+                DTOutput("links_tbl"),
+                type = config$ui$spinner_type
+              )
+            )
+          )
+        )
+      ),
+
+      br(),
+
+      fluidRow(
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("hits_by_gun", height = "300px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Total NIBIN leads for most active guns; individual gun view shows monthly lead pattern."
+            )
+          )
+        ),
+        column(
+          6,
+          div(
+            class = "chart-card",
+            withSpinner(
+              plotlyOutput("links_over_time", height = "300px"),
+              type = config$ui$spinner_type
+            ),
+            tags$small(
+              class = "helper-text",
+              "Bars = unique links; Line = average incidents per linked gun."
+            )
+          )
+        )
+      )
+    ),
+  ),
+  # End of page_navbar
+
+  # Welcome Modal (disclaimer matches header warning)
+  tags$div(
+    class = "modal fade",
+    id = "welcomeModal",
+    tabindex = "-1",
+    tags$div(
+      class = "modal-dialog modal-lg",
+      tags$div(
+        class = "modal-content",
+        tags$div(
+          class = "modal-header",
+          style = "background-color:#1a204b; color: white;",
+          tags$h4(class = "modal-title", "🎯 Welcome to the CGIC Dashboard"),
+          tags$button(
+            type = "button",
+            class = "btn-close btn-close-white",
+            `data-bs-dismiss` = "modal"
+          )
+        ),
+        tags$div(
+          class = "modal-body",
+          p(
+            "This interactive dashboard helps you analyze crime gun intelligence data and NIBIN leads."
           ),
-          tags$small(
-            class = "helper-text",
-            "Bars = unique links; Line = average incidents per linked gun."
+          h5("Quick Overview:"),
+          tags$ul(
+            tags$li(strong("Instructions:"), " How to use this dashboard"),
+            tags$li(strong("Overview:"), " Key metrics and trends"),
+            tags$li(strong("Map & Incidents:"), " Geographic analysis"),
+            tags$li(strong("Clearance:"), " Case clearance tracking"),
+            tags$li(strong("NIBIN & Sankey:"), " Gun-incident networks")
+          ),
+          h5("💡 Tips:"),
+          tags$ul(
+            tags$li(
+              "Use filters in the sidebar to refine data (filters appear on all tabs)"
+            ),
+            tags$li("Toggle map layers to see different views"),
+            tags$li("Select guns to filter network connections"),
+            tags$li("Hover over charts for detailed information"),
+            tags$li("Use the 'Clear Filters' button to reset all filters")
+          ),
+          div(
+            class = "alert alert-warning",
+            style = "margin-top: 15px;",
+            tags$strong("⚠️ Note:"),
+            " The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
+          )
+        ),
+        tags$div(
+          class = "modal-footer",
+          tags$button(
+            type = "button",
+            class = "btn btn-secondary",
+            `data-bs-dismiss` = "modal",
+            onclick = "localStorage.setItem('cgic_welcome_seen', 'true');",
+            "Don't Show Again"
+          ),
+          tags$button(
+            type = "button",
+            class = "btn btn-primary",
+            `data-bs-dismiss` = "modal",
+            "Get Started"
           )
         )
       )
     )
   ),
 
-),
-# End of page_navbar
-
-# Welcome Modal (disclaimer matches header warning)
-tags$div(
-  class = "modal fade",
-  id = "welcomeModal",
-  tabindex = "-1",
-  tags$div(
-    class = "modal-dialog modal-lg",
-    tags$div(
-      class = "modal-content",
-      tags$div(
-        class = "modal-header",
-        style = "background-color:#1a204b; color: white;",
-        tags$h4(class = "modal-title", "🎯 Welcome to the CGIC Dashboard"),
-        tags$button(
-          type = "button",
-          class = "btn-close btn-close-white",
-          `data-bs-dismiss` = "modal"
-        )
-      ),
-      tags$div(
-        class = "modal-body",
-        p(
-          "This interactive dashboard helps you analyze crime gun intelligence data and NIBIN leads."
-        ),
-        h5("Quick Overview:"),
-        tags$ul(
-          tags$li(strong("Instructions:"), " How to use this dashboard"),
-          tags$li(strong("Overview:"), " Key metrics and trends"),
-          tags$li(strong("Map & Incidents:"), " Geographic analysis"),
-          tags$li(strong("Clearance:"), " Case clearance tracking"),
-          tags$li(strong("NIBIN & Sankey:"), " Gun-incident networks")
-        ),
-        h5("💡 Tips:"),
-        tags$ul(
-          tags$li(
-            "Use filters in the sidebar to refine data (filters appear on all tabs)"
-          ),
-          tags$li("Toggle map layers to see different views"),
-          tags$li("Select guns to filter network connections"),
-          tags$li("Hover over charts for detailed information"),
-          tags$li("Use the 'Clear Filters' button to reset all filters")
-        ),
-        div(
-          class = "alert alert-warning",
-          style = "margin-top: 15px;",
-          tags$strong("⚠️ Note:"),
-          " The data shown in this mock dashboard is manufactured and not representative of any actual city, locality, or jurisdiction."
-        )
-      ),
-      tags$div(
-        class = "modal-footer",
-        tags$button(
-          type = "button",
-          class = "btn btn-secondary",
-          `data-bs-dismiss` = "modal",
-          onclick = "localStorage.setItem('cgic_welcome_seen', 'true');",
-          "Don't Show Again"
-        ),
-        tags$button(
-          type = "button",
-          class = "btn btn-primary",
-          `data-bs-dismiss` = "modal",
-          "Get Started"
-        )
-      )
-    )
-  )
-),
-
-# Auto-show modal on first visit
-tags$script(HTML(
-  "
+  # Auto-show modal on first visit
+  tags$script(HTML(
+    "
   document.addEventListener('DOMContentLoaded', function() {
     if (!localStorage.getItem('cgic_welcome_seen')) {
       var modal = new bootstrap.Modal(document.getElementById('welcomeModal'));
@@ -1112,7 +1117,7 @@ tags$script(HTML(
     }
   });
   "
-))
+  ))
 ) # End of tagList
 
 # ---- Server Function ----
@@ -2130,7 +2135,14 @@ server <- function(input, output, session) {
 
     datatable(
       display_data,
-      colnames = c("Incident ID", "Date", "Incident Type", "District", "Sector", "Casings"),
+      colnames = c(
+        "Incident ID",
+        "Date",
+        "Incident Type",
+        "District",
+        "Sector",
+        "Casings"
+      ),
       selection = "multiple",
       rownames = FALSE,
       options = list(
@@ -2172,7 +2184,9 @@ server <- function(input, output, session) {
   # Reactive: edges filtered by table row selection
   edges_for_sankey <- reactive({
     ed <- edges_slim()
-    if (nrow(ed) == 0) return(data.frame())
+    if (nrow(ed) == 0) {
+      return(data.frame())
+    }
 
     gid <- selected_gun_id()
 
@@ -2312,7 +2326,14 @@ server <- function(input, output, session) {
 
     datatable(
       edx,
-      colnames = c("Firearm ID", "Incident ID", "Date", "Incident Type", "District", "Sector"),
+      colnames = c(
+        "Firearm ID",
+        "Incident ID",
+        "Date",
+        "Incident Type",
+        "District",
+        "Sector"
+      ),
       selection = "single",
       rownames = FALSE,
       options = list(
