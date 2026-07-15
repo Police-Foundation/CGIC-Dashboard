@@ -428,7 +428,7 @@ instructions_content <- div(
     p(
       "For a detailed description of dashboard functionality and capabilities, please access the ",
       a(
-        href = "#",
+        href = "https://crimegunintelcenters.org/wp-content/uploads/2026/07/CGIC-Dashboard-User-Guide.pdf",
         "User Guide",
         target = "_blank"
       ),
@@ -438,7 +438,7 @@ instructions_content <- div(
     p(
       "Visit ",
       a(
-        href = "https://crimegunintelcenters.org/wp-content/uploads/2026/07/CGIC-Dashboard-User-Guide.pdf",
+        href = "https://crimegunintelcenters.org",
         "crimegunintelcenters.org",
         target = "_blank"
       ),
