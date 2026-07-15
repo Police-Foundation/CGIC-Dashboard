@@ -3767,45 +3767,6 @@
     "app.R": {
       "checksum": "9cefc4192408890130e46d29663080f4"
     },
-    "CGE Dashboard Link Association.pdf": {
-      "checksum": "fc59c830193d962741144521684601f7"
-    },
-    "CGIC-One-Pager-2024.pdf": {
-      "checksum": "8d6897f394055d50a66651e53858d286"
-    },
-    "CGIC Brand Guidelines.pdf": {
-      "checksum": "4dff761c0ddfe195f6455d8c71a37e4f"
-    },
-    "CGIC Dashboard Guide Outline.docx": {
-      "checksum": "b49ee9879953bff9f7fc004d079a507f"
-    },
-    "CGIC Stats Guide writeup_RF.docx": {
-      "checksum": "9c3c4657de504d5a383c3cfb5c8fd796"
-    },
-    "CGIC Stats Guide_DRAFT.docx": {
-      "checksum": "8be39c6f690a3c45bbf4a5ac9d491ee9"
-    },
-    "CGIC_GunStat_Toolkit.pdf": {
-      "checksum": "a04e8097d555a158c0730a15d258932a"
-    },
-    "cgic_synthetic_data_factory.R": {
-      "checksum": "f8c7f56594d197aa9d2170c2485b68e1"
-    },
-    "Chattanooga CGIC July 25 Stats.pdf": {
-      "checksum": "5c087b499b5fa6b2132282ba23ec1654"
-    },
-    "CPD Metrics 6.25.csv": {
-      "checksum": "432e294d2610630ea8ea796b861f4ecd"
-    },
-    "CPD Metrics 6.25.xlsx": {
-      "checksum": "807024996c9907aa8cd665ae0039468f"
-    },
-    "Dashboard Tutorial Data Set .csv": {
-      "checksum": "fdd467146b940a7d04ad0f2554ea885a"
-    },
-    "Dashboard Tutorial Data Set .xlsx": {
-      "checksum": "0126f1dde76039aef85bf7490e2dd18c"
-    },
     "data/acquisitions.csv": {
       "checksum": "46bea7a8d1437ce16ada373f27095992"
     },
@@ -3862,33 +3823,6 @@
     },
     "data/recoveries.csv": {
       "checksum": "69347f68f23edcb03c547babb9338716"
-    },
-    "Designing Dashboard for CGIC Operations.docx": {
-      "checksum": "d029a837401ad4c353cac4eb64df53b5"
-    },
-    "ESRI Dashboard Presentation.pptx": {
-      "checksum": "333fde89f678c2d5630197d6bb5f3dc7"
-    },
-    "Knoxville CGIC Recommendations.pdf": {
-      "checksum": "2ca27b9ed62d79576cf65a29707ba98e"
-    },
-    "OLD CODE/app.R": {
-      "checksum": "19dbf460bd78d01310092bebf44922e1"
-    },
-    "OLD CODE/app_CGIC_FINAL.R": {
-      "checksum": "9cefc4192408890130e46d29663080f4"
-    },
-    "OLD CODE/app_CGICbrand.R": {
-      "checksum": "78c4711cbd8aa033613b6750c6da4e10"
-    },
-    "Part 1 CGIC Metrics DRAFT JM.docx": {
-      "checksum": "3f2d1b81348bcc4d23fd91d76c39c3bc"
-    },
-    "The-Prosecutors-Crime-Analyst_Analytic-Tools.pdf": {
-      "checksum": "38cbff208de0d38f765d108c590d599a"
-    },
-    "Vanderburgh Co CGIC Recommendations.pdf": {
-      "checksum": "4c60dcd27f02f30f3e3fd463df3c8345"
     },
     "www/cgic-logo-reverse.png": {
       "checksum": "9790cefb135fa44a770e75252b67efbf"
