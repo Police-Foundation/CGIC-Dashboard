@@ -1923,7 +1923,13 @@ server <- function(input, output, session) {
     }
 
     leaflet(options = leafletOptions(preferCanvas = TRUE)) %>%
-      addProviderTiles(providers$CartoDB.Positron) %>%
+      addTiles(
+        urlTemplate = paste0(
+          "https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png?key=",
+          Sys.getenv("CARTO_API_KEY")
+        ),
+        attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      ) %>%
       setView(
         lng = center_lon,
         lat = center_lat,
